@@ -39,47 +39,24 @@ async def check_in(
 
     today = date.today()
 
-    # Check if already checked in today
-    existing = await db.execute(
-        select(CheckIn).where(
-            CheckIn.habit_id == habit_id,
-            CheckIn.date == today,
-        )
-    )
-    existing_checkin = existing.scalar_one_or_none()
-
-    # Get old total days for milestone detection
+    # Get old unique days for milestone detection
     old_result = await db.execute(
-        select(func.count(CheckIn.id)).where(CheckIn.habit_id == habit_id)
+        select(func.count(func.distinct(CheckIn.date))).where(CheckIn.habit_id == habit_id)
     )
     old_count_row = old_result.fetchone()
     old_total_days = old_count_row[0] if old_count_row else 0
 
-    if existing_checkin:
-        # Update existing checkin (e.g., upgrade from mini to full)
-        if existing_checkin.is_mini and not data.is_mini:
-            existing_checkin.is_mini = False
-            if data.note is not None:
-                existing_checkin.note = data.note
-            if data.mood is not None:
-                existing_checkin.mood = data.mood
-            await db.commit()
-            await db.refresh(existing_checkin)
-            checkin = existing_checkin
-        else:
-            # Already checked in with same or higher level
-            checkin = existing_checkin
-    else:
-        checkin = CheckIn(
-            habit_id=habit_id,
-            date=today,
-            is_mini=data.is_mini,
-            note=data.note,
-            mood=data.mood,
-        )
-        db.add(checkin)
-        await db.commit()
-        await db.refresh(checkin)
+    # Always create a new check-in (allow multiple per day)
+    checkin = CheckIn(
+        habit_id=habit_id,
+        date=today,
+        is_mini=data.is_mini,
+        note=data.note,
+        mood=data.mood,
+    )
+    db.add(checkin)
+    await db.commit()
+    await db.refresh(checkin)
 
     # Calculate new stats
     all_result = await db.execute(

@@ -59,8 +59,8 @@ async def _habit_to_response(habit: Habit, db: AsyncSession) -> HabitResponse:
         is_archived=habit.is_archived,
         created_at=habit.created_at,
         updated_at=habit.updated_at,
-        checked_in_today=any(not c.is_mini for c in today_checkins),
-        checked_in_today_mini=any(c.is_mini for c in today_checkins),
+        today_count=sum(1 for c in today_checkins if not c.is_mini),
+        today_mini_count=sum(1 for c in today_checkins if c.is_mini),
         tree=_tree_to_dict(tree),
     )
 
@@ -91,6 +91,9 @@ async def list_habits(
         checkin_is_mini = [row[1] for row in rows]
         tree = calculate_tree(checkin_dates, checkin_is_mini)
 
+        today = date.today()
+        today_full = sum(1 for i, d in enumerate(checkin_dates) if d == today and not checkin_is_mini[i])
+
         items.append(
             HabitListItem(
                 id=habit.id,
@@ -99,6 +102,8 @@ async def list_habits(
                 color=habit.color,
                 tree_species=habit.tree_species,
                 is_archived=habit.is_archived,
+                today_count=today_full,
+                target_count_per_day=habit.target_count_per_day,
                 tree=_tree_to_dict(tree),
             )
         )

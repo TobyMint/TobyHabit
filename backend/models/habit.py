@@ -30,9 +30,6 @@ class Habit(Base):
 
 class CheckIn(Base):
     __tablename__ = "check_ins"
-    __table_args__ = (
-        UniqueConstraint("habit_id", "date", name="uq_habit_date"),
-    )
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     habit_id: Mapped[int] = mapped_column(Integer, ForeignKey("habits.id"), nullable=False)

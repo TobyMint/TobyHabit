@@ -47,8 +47,8 @@ class HabitResponse(BaseModel):
     is_archived: bool
     created_at: datetime
     updated_at: datetime
-    checked_in_today: bool
-    checked_in_today_mini: bool
+    today_count: int  # how many times checked in today
+    today_mini_count: int  # how many mini check-ins today
     tree: TreeInfo | None = None
 
     model_config = {"from_attributes": True}
@@ -61,6 +61,8 @@ class HabitListItem(BaseModel):
     color: str
     tree_species: str
     is_archived: bool
+    today_count: int
+    target_count_per_day: int
     tree: TreeInfo | None = None
 
     model_config = {"from_attributes": True}

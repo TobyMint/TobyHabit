@@ -166,33 +166,60 @@ export default function HabitDetail() {
 
       {/* Check-in button */}
       <div className="flex flex-col gap-2">
-        {!habit.checked_in_today ? (
-          <button
-            onClick={() => setShowCheckin(true)}
-            className="btn-primary w-full py-4 text-lg flex items-center justify-center gap-2"
-          >
-            <span>✅</span> 今日打卡
-          </button>
-        ) : (
-          <div className="card text-center py-3">
-            <p className="text-green-700 font-semibold flex items-center justify-center gap-2">
-              <span>✅</span> 今日已打卡
-              {habit.checked_in_today_mini && <span className="text-xs text-amber-600">（最小版）</span>}
-            </p>
-            {habit.checked_in_today_mini && !habit.checked_in_today && (
-              <p className="text-xs text-gray-400 mt-1">已完成最小版，可以做完整版升级</p>
-            )}
+        {/* Today's progress */}
+        <div className="card py-3">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-sm font-medium text-gray-600">今日进度</span>
+            <span className={`text-sm font-bold ${
+              habit.today_count >= habit.target_count_per_day ? 'text-green-600' : 'text-amber-600'
+            }`}>
+              {habit.today_count} / {habit.target_count_per_day}
+            </span>
           </div>
-        )}
+          <div className="w-full bg-gray-100 rounded-full h-2.5">
+            <motion.div
+              className={`h-full rounded-full ${
+                habit.today_count >= habit.target_count_per_day
+                  ? 'bg-green-500'
+                  : 'bg-amber-400'
+              }`}
+              initial={{ width: 0 }}
+              animate={{
+                width: `${Math.min((habit.today_count / habit.target_count_per_day) * 100, 100)}%`,
+              }}
+              transition={{ duration: 0.5 }}
+            />
+          </div>
+        </div>
 
-        {/* Mini version button */}
-        {!habit.checked_in_today && !habit.checked_in_today_mini && habit.mini_version_text && (
-          <button
-            onClick={() => handleCheckIn(true)}
-            className="btn-secondary w-full py-3 text-sm"
-          >
-            🐣 最小版：{habit.mini_version_text}
-          </button>
+        {habit.today_count >= habit.target_count_per_day ? (
+          <div className="card text-center py-3 bg-green-50 border-green-200">
+            <p className="text-green-700 font-semibold flex items-center justify-center gap-2">
+              <span>🎉</span> 今日目标达成！
+            </p>
+            <p className="text-xs text-green-500 mt-1">
+              已完成 {habit.today_count}/{habit.target_count_per_day} 次打卡
+            </p>
+          </div>
+        ) : (
+          <>
+            <button
+              onClick={() => setShowCheckin(true)}
+              className="btn-primary w-full py-4 text-lg flex items-center justify-center gap-2"
+            >
+              <span>✅</span> 今日打卡（{habit.today_count}/{habit.target_count_per_day}）
+            </button>
+
+            {/* Mini version button */}
+            {habit.mini_version_text && habit.today_count === 0 && (
+              <button
+                onClick={() => handleCheckIn(true)}
+                className="btn-secondary w-full py-3 text-sm"
+              >
+                🐣 最小版：{habit.mini_version_text}
+              </button>
+            )}
+          </>
         )}
       </div>
 

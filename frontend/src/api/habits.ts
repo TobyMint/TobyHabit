@@ -24,8 +24,8 @@ export interface Habit {
   is_archived: boolean
   created_at: string
   updated_at: string
-  checked_in_today: boolean
-  checked_in_today_mini: boolean
+  today_count: number
+  today_mini_count: number
   tree: TreeInfo | null
 }
 
@@ -36,6 +36,8 @@ export interface HabitListItem {
   color: string
   tree_species: string
   is_archived: boolean
+  today_count: number
+  target_count_per_day: number
   tree: TreeInfo | null
 }
 
