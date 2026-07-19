@@ -1,0 +1,15 @@
+[Unit]
+Description=TobyHabit - 习惯森林
+After=network.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/root/github.com/TobyMint/TobyHabit
+Environment=PATH=/root/.local/bin:/usr/bin:/bin:/root/github.com/TobyMint/TobyHabit/.venv/bin
+ExecStart=/root/.local/bin/uv run uvicorn backend.main:app --host 0.0.0.0 --port 8899
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target
