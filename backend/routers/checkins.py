@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from backend.config import get_today
 from backend.database import get_db
 from backend.models.habit import Habit, CheckIn
 from backend.schemas.habit import CheckInCreate, CheckInResponse, CheckInResult
@@ -37,7 +38,7 @@ async def check_in(
     if habit.is_archived:
         raise HTTPException(status_code=400, detail="已归档的习惯不能打卡")
 
-    today = date.today()
+    today = get_today()
 
     # Get old unique days for milestone detection
     old_result = await db.execute(
@@ -108,7 +109,7 @@ async def habit_calendar(
     rows = result.all()
 
     if not rows:
-        today = date.today()
+        today = get_today()
         return HabitCalendarResponse(
             days=[],
             start_date=today,

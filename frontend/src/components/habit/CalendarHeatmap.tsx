@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
 import { type CalendarDay } from '../../api/habits'
+import { getToday } from '../../utils/date'
 
 interface Props {
   days: CalendarDay[]
@@ -8,7 +9,7 @@ interface Props {
 
 export default function CalendarHeatmap({ days, color = '#4CAF50' }: Props) {
   const weeks = useMemo(() => {
-    const today = new Date()
+    const today = getToday()
     const startDate = new Date(today)
     startDate.setDate(startDate.getDate() - 83) // ~12 weeks
 

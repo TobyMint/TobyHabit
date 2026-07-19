@@ -2,6 +2,8 @@ from datetime import date, timedelta
 from dataclasses import dataclass
 from collections import defaultdict
 
+from backend.config import get_today
+
 
 @dataclass
 class StreakInfo:
@@ -42,7 +44,7 @@ def calculate_streak(
             resurrection_required=resurrection_required,
         )
 
-    today = date.today()
+    today = get_today()
     sorted_dates = sorted(set(checkin_dates))
 
     # Build all streaks

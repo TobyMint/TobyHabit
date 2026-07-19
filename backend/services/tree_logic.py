@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from datetime import date, timedelta
 
-from backend.config import MILESTONES, RESURRECTION_WINDOW_DAYS, RESURRECTION_REQUIRED_DAYS
+from backend.config import MILESTONES, RESURRECTION_WINDOW_DAYS, RESURRECTION_REQUIRED_DAYS, get_today
 from backend.services.streak import StreakInfo, calculate_streak
 
 
@@ -74,7 +74,7 @@ def calculate_tree(
 
     # Calculate recent mini ratio (last 7 days)
     if checkin_is_mini:
-        today = date.today()
+        today = get_today()
         recent = [
             is_mini
             for d, is_mini in zip(checkin_dates, checkin_is_mini)

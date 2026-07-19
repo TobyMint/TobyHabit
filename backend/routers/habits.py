@@ -1,11 +1,11 @@
 from dataclasses import asdict
-from datetime import date
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
+from backend.config import get_today
 from backend.database import get_db
 from backend.models.habit import Habit, CheckIn
 from backend.schemas.habit import (
@@ -44,7 +44,7 @@ async def _habit_to_response(habit: Habit, db: AsyncSession) -> HabitResponse:
 
     tree = calculate_tree(checkin_dates, checkin_is_mini)
 
-    today = date.today()
+    today = get_today()
     today_checkins = [c for c in checkins if c.date == today]
 
     return HabitResponse(
@@ -91,7 +91,7 @@ async def list_habits(
         checkin_is_mini = [row[1] for row in rows]
         tree = calculate_tree(checkin_dates, checkin_is_mini)
 
-        today = date.today()
+        today = get_today()
         today_full = sum(1 for i, d in enumerate(checkin_dates) if d == today and not checkin_is_mini[i])
 
         items.append(
