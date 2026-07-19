@@ -5,6 +5,7 @@ export interface TreeInfo {
   stage_label: string
   health: 'excellent' | 'good' | 'okay' | 'wilting' | 'wilted'
   total_days: number
+  effective_days: number
   current_streak: number
   longest_streak: number
   freeze_cards: number

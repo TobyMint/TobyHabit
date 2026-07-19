@@ -27,7 +27,8 @@ class TreeInfo(BaseModel):
     stage: int
     stage_label: str
     health: str  # excellent / good / okay / wilting / wilted
-    total_days: int
+    total_days: int  # raw unique days
+    effective_days: int  # full days + mini-only days // 2
     current_streak: int
     longest_streak: int
     freeze_cards: int

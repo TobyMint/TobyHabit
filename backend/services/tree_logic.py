@@ -10,7 +10,8 @@ class TreeInfo:
     stage: int
     stage_label: str
     health: str  # excellent / good / okay / wilting / wilted
-    total_days: int
+    total_days: int  # raw unique days
+    effective_days: int  # full days + (mini-only days // 2)
     current_streak: int
     longest_streak: int
     freeze_cards: int
@@ -60,49 +61,75 @@ def get_health(current_streak: int, recent_mini_ratio: float = 0.0) -> str:
     return "okay"
 
 
+def _compute_effective_days(
+    checkin_dates: list[date],
+    checkin_is_mini: list[bool],
+) -> tuple[int, int]:
+    """
+    Compute raw unique days and effective days.
+    Mini-only days count as 0.5 (2 mini days = 1 effective day).
+    A day with at least one full check-in counts as 1 full day.
+    """
+    if not checkin_dates:
+        return 0, 0
+
+    # For each unique date, track the best check-in type
+    date_best: dict[date, bool] = {}  # True = has full check-in
+    for d, is_mini in zip(checkin_dates, checkin_is_mini):
+        if d not in date_best:
+            date_best[d] = not is_mini
+        else:
+            # Upgrade from mini to full if we see a full check-in
+            if not is_mini:
+                date_best[d] = True
+
+    raw_days = len(date_best)
+    full_days = sum(1 for v in date_best.values() if v)
+    mini_days = sum(1 for v in date_best.values() if not v)
+    effective_days = full_days + (mini_days // 2)
+
+    return raw_days, effective_days
+
+
 def calculate_tree(
     checkin_dates: list[date],
     checkin_is_mini: list[bool] | None = None,
 ) -> TreeInfo:
-    """
-    Calculate full tree info from check-in data.
-    """
-    total_days = len(set(checkin_dates))
-    stage = get_stage(total_days)
+    """Calculate full tree info from check-in data."""
+    if checkin_is_mini is None:
+        checkin_is_mini = [False] * len(checkin_dates)
+
+    raw_days, effective_days = _compute_effective_days(checkin_dates, checkin_is_mini)
+    stage = get_stage(effective_days)
 
     streak_info = calculate_streak(checkin_dates)
 
     # Calculate recent mini ratio (last 7 days)
-    if checkin_is_mini:
-        today = get_today()
-        recent = [
-            is_mini
-            for d, is_mini in zip(checkin_dates, checkin_is_mini)
-            if d > today - timedelta(days=7)
-        ]
-        if recent:
-            mini_ratio = sum(recent) / len(recent)
-        else:
-            mini_ratio = 0.0
-    else:
-        mini_ratio = 0.0
+    today = get_today()
+    recent = [
+        is_mini
+        for d, is_mini in zip(checkin_dates, checkin_is_mini)
+        if d > today - timedelta(days=7)
+    ]
+    mini_ratio = sum(recent) / len(recent) if recent else 0.0
 
     health = get_health(streak_info.current_streak, mini_ratio)
 
-    # Calculate next milestone
+    # Calculate next milestone (based on effective_days)
     next_milestone = None
     days_to_next = None
     for m in MILESTONES:
-        if total_days < m:
+        if effective_days < m:
             next_milestone = m
-            days_to_next = m - total_days
+            days_to_next = m - effective_days
             break
 
     return TreeInfo(
         stage=stage,
         stage_label=STAGE_LABELS[stage],
         health=health,
-        total_days=total_days,
+        total_days=raw_days,
+        effective_days=effective_days,
         current_streak=streak_info.current_streak,
         longest_streak=streak_info.longest_streak,
         freeze_cards=streak_info.freeze_cards_available,
@@ -111,10 +138,14 @@ def calculate_tree(
     )
 
 
-def get_reached_milestones(old_total_days: int, new_total_days: int) -> list[int]:
-    """Return list of milestone days crossed in this check-in."""
+def get_reached_milestones(
+    old_effective_days: int, new_effective_days: int, is_mini: bool
+) -> list[int]:
+    """Return milestone days crossed. Mini check-ins don't trigger celebrations."""
+    if is_mini:
+        return []
     reached = []
     for m in MILESTONES:
-        if old_total_days < m <= new_total_days:
+        if old_effective_days < m <= new_effective_days:
             reached.append(m)
     return reached

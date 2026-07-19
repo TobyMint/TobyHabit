@@ -14,6 +14,7 @@ from dataclasses import asdict
 from backend.services.tree_logic import (
     calculate_tree,
     get_reached_milestones,
+    _compute_effective_days,
 )
 
 def _tree_to_dict(tree):
@@ -40,12 +41,14 @@ async def check_in(
 
     today = get_today()
 
-    # Get old unique days for milestone detection
+    # Get existing checkins for old effective days calculation
     old_result = await db.execute(
-        select(func.count(func.distinct(CheckIn.date))).where(CheckIn.habit_id == habit_id)
+        select(CheckIn).where(CheckIn.habit_id == habit_id).order_by(CheckIn.date.desc())
     )
-    old_count_row = old_result.fetchone()
-    old_total_days = old_count_row[0] if old_count_row else 0
+    old_checkins = old_result.scalars().all()
+    old_dates = [c.date for c in old_checkins]
+    old_is_mini = [c.is_mini for c in old_checkins]
+    _, old_effective = _compute_effective_days(old_dates, old_is_mini)
 
     # Always create a new check-in (allow multiple per day)
     checkin = CheckIn(
@@ -59,17 +62,12 @@ async def check_in(
     await db.commit()
     await db.refresh(checkin)
 
-    # Calculate new stats
-    all_result = await db.execute(
-        select(CheckIn).where(CheckIn.habit_id == habit_id).order_by(CheckIn.date.desc())
-    )
-    all_checkins = all_result.scalars().all()
-    checkin_dates = [c.date for c in all_checkins]
-    checkin_is_mini = [c.is_mini for c in all_checkins]
-    new_total_days = len(set(checkin_dates))
+    # Calculate new stats (include the new checkin)
+    new_dates = old_dates + [checkin.date]
+    new_is_mini = old_is_mini + [checkin.is_mini]
 
-    tree = calculate_tree(checkin_dates, checkin_is_mini)
-    milestones = get_reached_milestones(old_total_days, new_total_days)
+    tree = calculate_tree(new_dates, new_is_mini)
+    milestones = get_reached_milestones(old_effective, tree.effective_days, data.is_mini)
 
     return CheckInResult(
         checkin=CheckInResponse.model_validate(checkin),

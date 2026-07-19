@@ -120,7 +120,7 @@ export default function HabitDetail() {
         {tree && (
           <div className="flex gap-4 mt-4 text-center">
             <div className="px-3 py-1.5 bg-green-50 rounded-xl">
-              <div className="text-lg font-bold text-green-700">{tree.total_days}</div>
+              <div className="text-lg font-bold text-green-700">{tree.effective_days}</div>
               <div className="text-xs text-green-600">累计天数</div>
             </div>
             <div className="px-3 py-1.5 bg-amber-50 rounded-xl">
@@ -153,7 +153,9 @@ export default function HabitDetail() {
                 initial={{ width: 0 }}
                 animate={{
                   width: `${Math.min(
-                    ((tree.total_days % 100) / (tree.next_milestone - (tree.total_days - (tree.total_days % 100)))) * 100,
+                    tree.next_milestone && tree.days_to_next_milestone != null
+                      ? ((tree.next_milestone - tree.days_to_next_milestone) / tree.next_milestone) * 100
+                      : 0,
                     100
                   )}%`,
                 }}
