@@ -48,7 +48,7 @@ export default function HabitEditModal({ habit, onClose }: Props) {
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center">
+      <div className="fixed inset-0 z-[60] flex items-end md:items-center justify-center">
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -60,7 +60,7 @@ export default function HabitEditModal({ habit, onClose }: Props) {
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: 30 }}
-          className="relative bg-white rounded-t-3xl md:rounded-3xl w-full max-w-md p-6 pt-8 shadow-xl"
+          className="relative bg-white rounded-t-3xl md:rounded-3xl w-full max-w-md p-6 pt-8 shadow-xl pb-24"
         >
           <h2 className="text-xl font-bold text-gray-800 mb-6">
             {habit.emoji} 编辑习惯

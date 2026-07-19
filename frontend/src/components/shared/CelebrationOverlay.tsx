@@ -44,7 +44,7 @@ export default function CelebrationOverlay({ open, milestones, streak, habitName
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           onClick={() => { setShow(false); setTimeout(onClose, 500) }}
-          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-md"
+          className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-md"
         >
           {/* Confetti */}
           {particles.map((p) => (

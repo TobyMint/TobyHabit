@@ -59,7 +59,7 @@ export default function CreateHabitModal({ open, onClose }: Props) {
   return (
     <AnimatePresence>
       {open && (
-        <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center">
+        <div className="fixed inset-0 z-[60] flex items-end md:items-center justify-center">
           {/* Backdrop */}
           <motion.div
             initial={{ opacity: 0 }}
@@ -75,7 +75,7 @@ export default function CreateHabitModal({ open, onClose }: Props) {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 30 }}
             transition={{ type: 'spring', damping: 25 }}
-            className="relative bg-white rounded-t-3xl md:rounded-3xl w-full max-w-md p-6 pt-8 max-h-[85vh] overflow-y-auto shadow-xl"
+            className="relative bg-white rounded-t-3xl md:rounded-3xl w-full max-w-md p-6 pt-8 max-h-[80vh] overflow-y-auto shadow-xl pb-24"
           >
             <h2 className="text-xl font-bold text-gray-800 mb-6">🌱 种下一颗种子</h2>
 
